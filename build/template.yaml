@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AI Fake News Detection Agent Lambda
+
+Globals:
+  Function:
+    Timeout: 900  # 15 minutes max for long agent executions
+    MemorySize: 2048
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        PROMPTS_BUCKET: !Ref PromptsBucket
+        RESULTS_BUCKET: !Ref ResultsBucket
+        AGENT_CONFIG_TABLE: !Ref AgentConfigTable
+        ANTHROPIC_API_KEY: !Ref AnthropicApiKey
+        OPENAI_API_KEY: !Ref OpenAIApiKey
+
+Parameters:
+  AnthropicApiKey:
+    Type: String
+    NoEcho: true
+    Description: Anthropic API Key
+  
+  OpenAIApiKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAI API Key
+    Default: ""
+
+Resources:
+  # Lambda Function
+  AgentExecutionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ai-fake-news-agent
+      Handler: lambda_handler.lambda_handler
+      CodeUri: .
+      Description: Execute standalone agent workflow
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AgentConfigTable
+        - S3CrudPolicy:
+            BucketName: !Ref PromptsBucket
+        - S3CrudPolicy:
+            BucketName: !Ref ResultsBucket
+      Events:
+        ExecuteAgent:
+          Type: Api
+          Properties:
+            Path: /execute-agent
+            Method: post
+            RestApiId: !Ref AgentApi
+
+  # API Gateway
+  AgentApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'POST, OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowOrigin: "'*'"
+
+  # DynamoDB Table
+  AgentConfigTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: agent-configs
+      AttributeDefinitions:
+        - AttributeName: config_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: config_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # S3 Buckets
+  PromptsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'ai-prompts-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+
+  ResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'ai-results-${AWS::AccountId}'
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldExecutions
+            Status: Enabled
+            ExpirationInDays: 90
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${AgentApi}.execute-api.${AWS::Region}.amazonaws.com/prod/execute-agent'
+  
+  LambdaFunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt AgentExecutionFunction.Arn
+  
+  PromptsBucketName:
+    Description: Prompts S3 Bucket
+    Value: !Ref PromptsBucket
+  
+  ResultsBucketName:
+    Description: Results S3 Bucket
+    Value: !Ref ResultsBucket

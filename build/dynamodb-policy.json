@@ -1,0 +1,32 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamoDBTableAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:CreateTable",
+        "dynamodb:DescribeTable"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:*:*:table/agent-configs",
+        "arn:aws:dynamodb:*:*:table/ai-prompts",
+        "arn:aws:dynamodb:*:*:table/execution-history"
+      ]
+    },
+    {
+      "Sid": "DynamoDBListTables",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:ListTables"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Fake News Detector",
+  "description": "An AI agent that analyzes news articles and claims to detect potential fake news or misinformation",
+  "config_id": "fake-news-detector-v1",
+  "prompt_id": "fake-news-detector-prompt-v1",
+  "tools": ["verify_on_platform"],
+  "sub_agents": [],
+  "knowledge_base": {
+    "enabled": false,
+    "vector_store": "chroma",
+    "index_name": "",
+    "embedding_model": "amazon.titan-embed-text-v1",
+    "top_k": 5
+  },
+  "llm_provider": "bedrock",
+  "model_id": "amazon.nova-micro-v1:0",
+  "temperature": 0.5,
+  "max_tokens": 2048,
+  "max_iterations": 8
+}
