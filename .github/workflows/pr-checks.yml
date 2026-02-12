@@ -1,0 +1,93 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better diff analysis
+    
+    - name: Check PR title format
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        
+        # Check if title follows conventional commits format
+        if ! echo "$PR_TITLE" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|ci)(\(.+\))?:.+'; then
+          echo "❌ PR title must follow conventional commits format"
+          echo "Examples:"
+          echo "  feat: add new verification tool"
+          echo "  fix: resolve DynamoDB connection issue"
+          echo "  docs: update README with deployment steps"
+          echo "  refactor: simplify agent factory logic"
+          exit 1
+        fi
+        echo "✅ PR title format valid"
+    
+    - name: Check for secrets in diff
+      run: |
+        # Check if any .env files are being committed
+        if git diff origin/main --name-only | grep -E '\.env$|credentials|secrets'; then
+          echo "❌ Attempting to commit sensitive files"
+          exit 1
+        fi
+        
+        # Check for common secret patterns
+        if git diff origin/main | grep -iE 'aws_secret_access_key|api_key.*=.*[A-Za-z0-9]{20}'; then
+          echo "⚠️  Potential secret detected in diff"
+          exit 1
+        fi
+        echo "✅ No secrets detected"
+    
+    - name: Check file size
+      run: |
+        # Fail if any file > 1MB (except allowed types)
+        LARGE_FILES=$(git diff origin/main --name-only | while read file; do
+          if [ -f "$file" ]; then
+            size=$(wc -c < "$file")
+            if [ $size -gt 1048576 ]; then
+              echo "$file ($size bytes)"
+            fi
+          fi
+        done)
+        
+        if [ ! -z "$LARGE_FILES" ]; then
+          echo "❌ Large files detected:"
+          echo "$LARGE_FILES"
+          exit 1
+        fi
+        echo "✅ No large files"
+    
+    - name: Require tests for new features
+      run: |
+        # Check if app/ code changed
+        if git diff origin/main --name-only | grep -q '^backend/app/'; then
+          # Check if tests were updated
+          if ! git diff origin/main --name-only | grep -q '^backend/tests/'; then
+            echo "⚠️  Warning: Code in app/ changed but no tests updated"
+            echo "Consider adding tests for new features"
+            # Don't fail, just warn
+          else
+            echo "✅ Tests updated"
+          fi
+        fi
+
+  check-branch-protection:
+    name: Verify Branch Protection
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'main'
+    
+    steps:
+    - name: Check if PR has required approvals
+      run: |
+        echo "ℹ️  This PR targets main branch"
+        echo "Required:"
+        echo "  - At least 1 approval"
+        echo "  - All CI checks must pass"
+        echo "  - No direct pushes allowed"

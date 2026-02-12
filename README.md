@@ -91,6 +91,15 @@ backend/
 └── docs/         # Documentation
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+**Important:**
+- `main` branch is protected - no direct pushes ⛔
+- All changes require pull requests + CI passing
+- Follow conventional commit format
+
 ## License
 
 MIT

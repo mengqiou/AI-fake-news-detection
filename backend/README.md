@@ -270,12 +270,21 @@ python tests/quick_test_verbose.py      # Detailed trace
 
 ## Contributing
 
-When adding features:
-1. Add code to appropriate `app/` subdirectory
-2. Create configuration template in `configs/`
-3. Add tests in `tests/`
-4. Update relevant README
-5. Add example if complex
+See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for full guidelines.
+
+**Quick checklist:**
+1. Create feature branch: `git checkout -b feat/your-feature`
+2. Make changes + add tests
+3. Format: `black .` and `isort .`
+4. Test: `python tests/quick_test.py`
+5. Commit: `git commit -m "feat: description"`
+6. Push + create PR
+
+**Branch Protection:**
+- ❌ No direct pushes to `main`
+- ✅ Pull requests required
+- ✅ CI must pass
+- ✅ 1 approval required
 
 ---
 
