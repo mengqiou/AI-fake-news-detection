@@ -8,20 +8,22 @@ Usage:
     python tests/test_fake_news_agent_local.py
 """
 
-import sys
 import os
+import sys
+
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.handlers.standalone_agent_handler import handle_standalone_agent_request
 import json
 from datetime import datetime
 
+from app.handlers.standalone_agent_handler import \
+    handle_standalone_agent_request
 
 # Sample fake news examples from different platforms
 SAMPLE_NEWS_ARTICLES = {
@@ -36,10 +38,9 @@ SAMPLE_NEWS_ARTICLES = {
             "author": "@truthseeker9999",
             "likes": 50000,
             "retweets": 25000,
-            "verified": False
-        }
+            "verified": False,
+        },
     },
-    
     "facebook_misleading": {
         "platform": "Facebook",
         "content": """
@@ -51,10 +52,9 @@ SAMPLE_NEWS_ARTICLES = {
         "metadata": {
             "author": "Truth Warriors United",
             "shares": 10000,
-            "reactions": 35000
-        }
+            "reactions": 35000,
+        },
     },
-    
     "news_site_real": {
         "platform": "Reuters",
         "content": """
@@ -69,10 +69,9 @@ SAMPLE_NEWS_ARTICLES = {
         "metadata": {
             "author": "NASA/ESA",
             "source": "Official NASA Release",
-            "peer_reviewed": True
-        }
+            "peer_reviewed": True,
+        },
     },
-    
     "whatsapp_rumor": {
         "platform": "WhatsApp",
         "content": """
@@ -85,12 +84,8 @@ SAMPLE_NEWS_ARTICLES = {
         
         - Forwarded many times
         """,
-        "metadata": {
-            "forwarded": True,
-            "source": "Unknown"
-        }
+        "metadata": {"forwarded": True, "source": "Unknown"},
     },
-    
     "credible_news": {
         "platform": "BBC News",
         "content": """
@@ -110,24 +105,24 @@ SAMPLE_NEWS_ARTICLES = {
             "author": "BBC Economics Team",
             "source": "Office for National Statistics",
             "fact_checked": True,
-            "citations": ["ONS", "Bank of England"]
-        }
-    }
+            "citations": ["ONS", "Bank of England"],
+        },
+    },
 }
 
 
 def format_analysis_request(article_key: str) -> str:
     """
     Format a news article into a structured request for the agent.
-    
+
     Args:
         article_key: Key of the article in SAMPLE_NEWS_ARTICLES
-        
+
     Returns:
         Formatted string for agent analysis
     """
     article = SAMPLE_NEWS_ARTICLES[article_key]
-    
+
     request = f"""Please analyze the following content for potential fake news or misinformation:
 
 PLATFORM: {article['platform']}
@@ -145,14 +140,14 @@ Please provide your analysis including:
 4. Evidence Assessment
 5. Recommendation (likely true / possibly misleading / likely false / needs investigation)
 """
-    
+
     return request
 
 
 def run_test(article_key: str, config_id: str = "fake-news-detector-v1"):
     """
     Run a test with a specific news article.
-    
+
     Args:
         article_key: Key of the article to test
         config_id: Agent configuration ID
@@ -160,24 +155,23 @@ def run_test(article_key: str, config_id: str = "fake-news-detector-v1"):
     print("=" * 80)
     print(f"TEST: {article_key.upper()}")
     print("=" * 80)
-    
+
     article = SAMPLE_NEWS_ARTICLES[article_key]
     print(f"\nPlatform: {article['platform']}")
     print(f"Content Preview: {article['content'].strip()[:150]}...")
     print("\n" + "-" * 80)
     print("Sending to Fake News Detection Agent...")
     print("-" * 80 + "\n")
-    
+
     # Format the request
     user_input = format_analysis_request(article_key)
-    
+
     # Call the handler
     try:
         result = handle_standalone_agent_request(
-            config_id=config_id,
-            user_input=user_input
+            config_id=config_id, user_input=user_input
         )
-        
+
         if result["success"]:
             print("✅ ANALYSIS SUCCESSFUL")
             print(f"\nExecution ID: {result['execution_id']}")
@@ -192,12 +186,13 @@ def run_test(article_key: str, config_id: str = "fake-news-detector-v1"):
         else:
             print("❌ ANALYSIS FAILED")
             print(f"Error: {result.get('error', 'Unknown error')}")
-            
+
     except Exception as e:
         print(f"❌ ERROR: {str(e)}")
         import traceback
+
         traceback.print_exc()
-    
+
     print("\n" + "=" * 80 + "\n")
 
 
@@ -210,14 +205,14 @@ def interactive_mode(config_id: str = "fake-news-detector-v1"):
     print("=" * 80)
     print("\nEnter a news article, claim, or social media post to analyze.")
     print("Type 'quit' or 'exit' to stop.\n")
-    
+
     while True:
         print("-" * 80)
         platform = input("Platform (e.g., Twitter, Facebook, News Site): ").strip()
-        
-        if platform.lower() in ['quit', 'exit']:
+
+        if platform.lower() in ["quit", "exit"]:
             break
-            
+
         print("\nEnter the content (press Enter twice when done):")
         lines = []
         while True:
@@ -225,13 +220,13 @@ def interactive_mode(config_id: str = "fake-news-detector-v1"):
             if line == "" and lines and lines[-1] == "":
                 break
             lines.append(line)
-        
+
         content = "\n".join(lines[:-1])  # Remove last empty line
-        
+
         if not content.strip():
             print("⚠️  No content provided. Try again.\n")
             continue
-        
+
         # Format request
         user_input = f"""Please analyze the following content for potential fake news or misinformation:
 
@@ -247,17 +242,16 @@ Please provide your analysis including:
 4. Evidence Assessment
 5. Recommendation (likely true / possibly misleading / likely false / needs investigation)
 """
-        
+
         print("\n" + "-" * 80)
         print("Analyzing...")
         print("-" * 80 + "\n")
-        
+
         try:
             result = handle_standalone_agent_request(
-                config_id=config_id,
-                user_input=user_input
+                config_id=config_id, user_input=user_input
             )
-            
+
             if result["success"]:
                 print("✅ ANALYSIS COMPLETE\n")
                 print("=" * 80)
@@ -267,10 +261,11 @@ Please provide your analysis including:
                 print("\n")
             else:
                 print(f"❌ Error: {result.get('error', 'Unknown error')}\n")
-                
+
         except Exception as e:
             print(f"❌ ERROR: {str(e)}\n")
             import traceback
+
             traceback.print_exc()
 
 
@@ -281,34 +276,34 @@ def main():
     print("\n" + "=" * 80)
     print(" " * 20 + "FAKE NEWS DETECTION AGENT - LOCAL TEST")
     print("=" * 80 + "\n")
-    
+
     print("Configuration:")
     print(f"  AWS Region: {os.getenv('AWS_REGION', 'Not set')}")
     print(f"  Agent Config: fake-news-detector-v1")
     print(f"  Timestamp: {datetime.now().isoformat()}")
     print("\n")
-    
+
     # Show menu
     print("Choose test mode:")
     print("  1. Run all sample tests")
     print("  2. Run specific sample test")
     print("  3. Interactive mode (enter your own news)")
     print("  4. Quick test (just one sample)")
-    
+
     choice = input("\nYour choice (1-4): ").strip()
-    
+
     if choice == "1":
         # Run all tests
         for article_key in SAMPLE_NEWS_ARTICLES.keys():
             run_test(article_key)
             input("\nPress Enter to continue to next test...")
-            
+
     elif choice == "2":
         # Run specific test
         print("\nAvailable samples:")
         for i, key in enumerate(SAMPLE_NEWS_ARTICLES.keys(), 1):
             print(f"  {i}. {key}")
-        
+
         sample_choice = input("\nEnter number: ").strip()
         try:
             idx = int(sample_choice) - 1
@@ -316,19 +311,19 @@ def main():
             run_test(article_key)
         except (ValueError, IndexError):
             print("❌ Invalid choice")
-            
+
     elif choice == "3":
         # Interactive mode
         interactive_mode()
-        
+
     elif choice == "4":
         # Quick test with one sample
         print("\n🚀 Running quick test with Twitter fake news sample...\n")
         run_test("twitter_fake")
-    
+
     else:
         print("❌ Invalid choice")
-    
+
     print("\n" + "=" * 80)
     print("TEST SESSION COMPLETE")
     print("=" * 80 + "\n")

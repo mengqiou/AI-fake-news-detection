@@ -7,16 +7,16 @@ or want to test faster without network calls.
 Note: This directly tests the agent workflow, bypassing the handler.
 """
 
-import sys
 import os
+import sys
+
 from dotenv import load_dotenv
 
 load_dotenv()
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.entity.AgentConfig import AgentConfig, KnowledgeBaseConfig
 from app.agents.agent_factory import instantiate_agent, invoke_agent
-
+from app.entity.AgentConfig import AgentConfig, KnowledgeBaseConfig
 
 # Stub prompt (normally loaded from DynamoDB)
 STUB_PROMPT = """You are a Fake News Detection AI Agent. Analyze content for misinformation.
@@ -45,37 +45,38 @@ def create_stub_agent_config() -> AgentConfig:
         model_id="amazon.nova-micro-v1:0",
         temperature=0.5,
         max_tokens=2048,
-        max_iterations=8
+        max_iterations=8,
     )
 
 
 def test_offline():
     """Test the agent without DynamoDB dependencies."""
-    
+
     print("\n" + "=" * 70)
     print("OFFLINE STUB TEST - Fake News Detection")
     print("=" * 70)
     print("\nThis test bypasses DynamoDB and uses stubbed data.")
     print("Useful for quick development iteration.\n")
-    
+
     # Create stub config
     agent_config = create_stub_agent_config()
-    
+
     print(f"Agent: {agent_config.name}")
     print(f"Model: {agent_config.model_id}")
     print(f"Provider: {agent_config.llm_provider}\n")
-    
+
     # Mock the prompt loading function
     import app.db_commands.prompt_commands as prompt_commands
+
     original_load_prompt = prompt_commands.load_prompt
-    
+
     def mock_load_prompt(prompt_id: str) -> str:
         print(f"[STUB] Using stubbed prompt instead of loading from DynamoDB")
         return STUB_PROMPT
-    
+
     # Temporarily replace the function
     prompt_commands.load_prompt = mock_load_prompt
-    
+
     try:
         # Test case
         test_input = """Analyze this for fake news:
@@ -84,7 +85,7 @@ PLATFORM: Twitter
 CONTENT: "BREAKING: Scientists prove that 5G causes COVID-19! Government coverup exposed!"
 
 Provide your credibility assessment."""
-        
+
         print("=" * 70)
         print("TEST INPUT:")
         print("=" * 70)
@@ -92,19 +93,19 @@ Provide your credibility assessment."""
         print("\n" + "=" * 70)
         print("Instantiating agent...")
         print("=" * 70 + "\n")
-        
+
         # Instantiate agent (this will use our mock)
         tools = {}  # No tools for offline test
         agent = instantiate_agent(agent_config, tools)
-        
+
         print("Agent instantiated successfully!")
         print("\n" + "=" * 70)
         print("Invoking agent with test input...")
         print("=" * 70 + "\n")
-        
+
         # Invoke agent
         result = invoke_agent(agent, test_input)
-        
+
         print("✅ SUCCESS!\n")
         print("=" * 70)
         print("AGENT RESPONSE:")
@@ -117,16 +118,17 @@ Provide your credibility assessment."""
         print(f"Tool calls: {result['metadata'].get('tool_calls')}")
         print(f"Total messages: {result['metadata'].get('total_messages')}")
         print("=" * 70 + "\n")
-        
+
     except Exception as e:
         print(f"\n❌ ERROR: {str(e)}\n")
         import traceback
+
         traceback.print_exc()
-        
+
     finally:
         # Restore original function
         prompt_commands.load_prompt = original_load_prompt
-    
+
     print("\n" + "=" * 70)
     print("OFFLINE TEST COMPLETE")
     print("=" * 70 + "\n")
@@ -136,5 +138,5 @@ if __name__ == "__main__":
     print("\n⚠️  OFFLINE/STUB MODE")
     print("This test uses mocked data and doesn't require DynamoDB.")
     print("For full integration testing, use test_fake_news_agent_local.py\n")
-    
+
     test_offline()

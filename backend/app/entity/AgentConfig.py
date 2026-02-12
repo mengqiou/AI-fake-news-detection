@@ -1,5 +1,5 @@
-from typing import List, Optional
 from dataclasses import dataclass, field
+from typing import List, Optional
 
 
 @dataclass
@@ -7,6 +7,7 @@ class KnowledgeBaseConfig:
     """
     Configuration for agent's knowledge base (for RAG).
     """
+
     enabled: bool = False
     vector_store: str = "chroma"  # "chroma", "pinecone", "qdrant"
     index_name: str = ""
@@ -20,6 +21,7 @@ class SubAgentConfig:
     Configuration for a sub-agent.
     Note: A subagent should be a leaf agent and not have any subagents.
     """
+
     name: str
     description: str
     config_id: str
@@ -27,7 +29,7 @@ class SubAgentConfig:
     tools: List[str] = field(default_factory=list)
     prompt_id: str = ""
     knowledge_base: Optional[KnowledgeBaseConfig] = None
-    
+
     # LLM Configuration
     llm_provider: str = "anthropic"  # "anthropic", "openai", or "bedrock"
     model_id: str = "claude-3-5-sonnet-20241022"
@@ -41,6 +43,7 @@ class AgentConfig:
     """
     Configuration for an agent.
     """
+
     name: str
     description: str
     config_id: str
@@ -48,7 +51,7 @@ class AgentConfig:
     prompt_id: str = ""
     sub_agents: List[SubAgentConfig] = field(default_factory=list)
     knowledge_base: Optional[KnowledgeBaseConfig] = None
-    
+
     # LLM Configuration
     llm_provider: str = "anthropic"  # "anthropic", "openai", or "bedrock"
     model_id: str = "claude-3-5-sonnet-20241022"

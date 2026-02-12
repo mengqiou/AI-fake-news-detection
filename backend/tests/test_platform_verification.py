@@ -7,19 +7,21 @@ This demonstrates the workflow:
 3. Agent returns result based on what it found (or didn't find) on the platform
 """
 
-import sys
 import os
+import sys
+
 from dotenv import load_dotenv
 
 load_dotenv()
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.handlers.standalone_agent_handler import handle_standalone_agent_request
+from app.handlers.standalone_agent_handler import \
+    handle_standalone_agent_request
 
 
 def test_claim(claim_description: str, claim_text: str):
     """Test a single claim against the verification platform."""
-    
+
     print("\n" + "=" * 80)
     print(f"TEST: {claim_description}")
     print("=" * 80)
@@ -27,19 +29,18 @@ def test_claim(claim_description: str, claim_text: str):
     print("\n" + "-" * 80)
     print("Sending to agent with verification platform tool...")
     print("-" * 80 + "\n")
-    
+
     user_input = f"""Please verify this claim:
 
 "{claim_text}"
 
 Use the verification platform to check if this claim has been fact-checked or verified."""
-    
+
     try:
         result = handle_standalone_agent_request(
-            config_id="fake-news-detector-v1",
-            user_input=user_input
+            config_id="fake-news-detector-v1", user_input=user_input
         )
-        
+
         if result["success"]:
             print("✅ VERIFICATION COMPLETE\n")
             print("=" * 80)
@@ -50,26 +51,27 @@ Use the verification platform to check if this claim has been fact-checked or ve
             print("TOOL USAGE:")
             print("=" * 80)
             print(f"Tool calls made: {result['metadata'].get('tool_calls', 0)}")
-            if result['metadata'].get('tool_results'):
+            if result["metadata"].get("tool_results"):
                 print("\nTool Results:")
-                for tool_result in result['metadata'].get('tool_results', []):
+                for tool_result in result["metadata"].get("tool_results", []):
                     print(f"  - {tool_result.get('tool_name')}: Called successfully")
             print("=" * 80 + "\n")
         else:
             print("❌ VERIFICATION FAILED")
             print(f"Error: {result.get('error')}\n")
-            
+
     except Exception as e:
         print(f"❌ ERROR: {str(e)}\n")
         import traceback
+
         traceback.print_exc()
-    
+
     input("Press Enter to continue to next test...")
 
 
 def main():
     """Run platform verification tests."""
-    
+
     print("\n" + "=" * 80)
     print(" " * 15 + "PLATFORM VERIFICATION TEST SUITE")
     print("=" * 80)
@@ -84,31 +86,28 @@ The agent will:
 4. Provide its assessment based on the platform's response
 """)
     print("=" * 80 + "\n")
-    
+
     # Test 1: Claim that EXISTS in platform and is FALSE
-    test_claim(
-        "FAKE NEWS - In Verification Platform",
-        "Drinking bleach cures COVID-19"
-    )
-    
+    test_claim("FAKE NEWS - In Verification Platform", "Drinking bleach cures COVID-19")
+
     # Test 2: Claim that EXISTS in platform and is TRUE
     test_claim(
         "REAL NEWS - In Verification Platform",
-        "NASA's Webb Telescope detected carbon dioxide on an exoplanet"
+        "NASA's Webb Telescope detected carbon dioxide on an exoplanet",
     )
-    
+
     # Test 3: Claim that DOES NOT EXIST in platform
     test_claim(
         "UNVERIFIED - Not in Platform",
-        "A new study shows that eating chocolate improves memory by 50%"
+        "A new study shows that eating chocolate improves memory by 50%",
     )
-    
+
     # Test 4: Another FALSE claim in platform
     test_claim(
         "CONSPIRACY THEORY - In Verification Platform",
-        "5G towers are used to control people's minds"
+        "5G towers are used to control people's minds",
     )
-    
+
     print("\n" + "=" * 80)
     print("TEST SUITE COMPLETE")
     print("=" * 80)
@@ -141,5 +140,5 @@ In production, this would be:
   
 For this demo, we use a stubbed database with common fake news examples.
 """)
-    
+
     main()

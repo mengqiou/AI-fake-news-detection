@@ -12,22 +12,6 @@ Analyzes news articles and claims to detect misinformation by:
 
 ## Quick Start
 
-```bash
-cd backend
-
-# 1. Test AWS connection
-python setup/test_bedrock_boto3.py
-
-# 2. Initialize DynamoDB tables
-python scripts/init_dynamodb.py
-
-# 3. Update agent configuration in DynamoDB
-python scripts/update_config.py all fake_news_detector_v1
-
-# 4. Test locally
-python tests/quick_test.py
-```
-
 > **Note**: Production deployment (Lambda, API Gateway, etc.) is work in progress.
 
 ## Architecture
@@ -66,7 +50,7 @@ Recommendation: DANGEROUS MISINFORMATION
 
 ## Documentation
 
-📖 **See `backend/README.md` for complete documentation** including:
+📖 **See [`backend/README.md`](backend/README.md) for complete documentation** including:
 - Detailed setup instructions
 - Configuration management
 - Testing guide
@@ -75,7 +59,7 @@ Recommendation: DANGEROUS MISINFORMATION
 - API reference
 
 **Quick links:**
-- Configuration: `backend/configs/README.md`
+- Configuration: [`backend/README.md`](backend/README.md)
 - Testing: `backend/tests/README.md`
 - Platform Verification: `backend/docs/platform_verification.md`
 
@@ -91,9 +75,6 @@ backend/
 └── docs/         # Documentation
 ```
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 **Important:**
 - `main` branch is protected - no direct pushes ⛔
