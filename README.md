@@ -81,6 +81,20 @@ backend/
 - All changes require pull requests + CI passing
 - Follow conventional commit format
 
+## Next Steps (2026-02-13)
+
+1. **Fix double tool-binding bug** — Remove `bind_tools` in either `agent_factory.py` or `agent_workflow.py`, not both
+2. **Widen `user_input` to multimodal** — Change `user_input: str` to `Union[str, List[dict]]` in `AgentState` and `invoke_agent` early, before building on top
+3. **Add `input_mode` field to `AgentConfig`** — `"text"` or `"multimodal"` to drive model selection and handler routing
+4. **Build image handler** — `image_standalone_agent_handler.py` that constructs multimodal `HumanMessage` with text + image
+5. **Build evidence-rich tools** — Each tool returns structured data (source, result, URL, confidence), not free text. This is the HD differentiator
+6. **Connect real data sources** — Replace mock DB with at least one real API (Google Fact Check, reverse image search, ELA analysis, etc.)
+7. **Compute credibility score from evidence** — Score derived from tool outputs, not LLM opinion
+8. **Add API layer** — FastAPI endpoints to expose the handlers
+9. **Add frontend** — User input form with image upload, structured results display showing the evidence chain
+
+> Items 1-4 are foundational refactors. Items 5-7 are where the grade lives. Items 8-9 are the "full-stack" finish.
+
 ## License
 
 MIT
